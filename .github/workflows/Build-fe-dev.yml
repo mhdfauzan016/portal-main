@@ -16,11 +16,12 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
     
-    - name: Login to Docker Hub
+    - name: Login to Azure Container Registry
       uses: docker/login-action@v3
       with:
-        username: ${{ secrets.DOCKER_HUB_USERNAME }}
-        password: ${{ secrets.DOCKER_HUB_TOKEN }}
+        registry: ${{ secrets.AZURE_REGISTRY_LOGIN_SERVER }}
+        username: ${{ secrets.AZURE_REGISTRY_USERNAME }}
+        password: ${{ secrets.AZURE_REGISTRY_PASSWORD }}
     
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
@@ -28,9 +29,7 @@ jobs:
         context: .
         push: true
         tags: |
-          ${{ secrets.DOCKER_HUB_USERNAME }}/portal-main-dev:${{ github.sha }}
-        cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/portal-main-dev:1.0.0
-        cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/portal-main-dev:${{ github.sha }},mode=max
+          ${{ secrets.AZURE_REGISTRY_LOGIN_SERVER }}/portal-main-dev:${{ github.sha }}
 
     - name: Login to Azure
       uses: azure/login@v1
@@ -41,4 +40,4 @@ jobs:
       uses: azure/webapps-deploy@v2
       with:
         app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
-        images: ${{ secrets.DOCKER_HUB_USERNAME }}/portal-main-dev:${{ github.sha }}
+        images: ${{ secrets.AZURE_REGISTRY_LOGIN_SERVER }}/portal-main-dev:${{ github.sha }}
