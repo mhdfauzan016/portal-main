@@ -28,7 +28,17 @@ jobs:
         context: .
         push: true
         tags: |
-          ${{ secrets.DOCKER_HUB_USERNAME }}/portal-main-dev:latest
           ${{ secrets.DOCKER_HUB_USERNAME }}/portal-main-dev:${{ github.sha }}
-        cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/portal-main-dev:buildcache
-        cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/portal-main-dev:buildcache,mode=max
+        cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/portal-main-dev:1.0.0
+        cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/portal-main-dev:${{ github.sha }},mode=max
+
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+    
+    - name: Deploy to Azure App Service
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
+        images: ${{ secrets.DOCKER_HUB_USERNAME }}/portal-main-dev:${{ github.sha }}
