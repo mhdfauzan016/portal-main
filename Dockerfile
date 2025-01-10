@@ -29,7 +29,7 @@ COPY --from=builder /app/package.json ./
 RUN npm install --production
 
 # Expose port if needed
-EXPOSE 80
+EXPOSE 8181
 
 # Start the application
 CMD ["npm", "start"]
