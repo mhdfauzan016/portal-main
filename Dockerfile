@@ -1,35 +1,19 @@
 # Build stage
-FROM node:18-alpine AS builder
-
-# Set working directory
+FROM node:16 as build-stage
 WORKDIR /app
-
-# Copy package files
-COPY package.json ./
-
-# Install dependencies
+COPY package*.json ./
 RUN npm install
-
-# Copy source code
 COPY . .
-
-# Build application
 RUN npm run build
 
 # Production stage
-FROM node:18-alpine
-
+FROM node:16-slim
 WORKDIR /app
+COPY --from=build-stage /app/dist ./dist
+COPY --from=build-stage /app/package*.json ./
+COPY --from=build-stage /app/server.js ./
 
-# Copy built assets from builder
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/package.json ./
+RUN npm install --only=production
 
-# Install production dependencies
-RUN npm install --production
-
-# Expose port if needed
 EXPOSE 3000
-
-# Start the application
-CMD ["npm", "run", "serve", "--", "--port", "3000", "--host", "0.0.0.0"]
+CMD ["node", "server.js"]
